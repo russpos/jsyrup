@@ -1,0 +1,6 @@
+{ "name": "norm",
+  "author" : "Russ Posluszny",
+  "main" : "./lib",
+  "engines" : { "node": ">= 0.2.2" }
+}
+

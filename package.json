@@ -1,0 +1,5 @@
+{ "name": "jsyrup",
+  "author" : "Russ Posluszny",
+  "main" : "./src",
+  "engines" : { "node": ">= 0.2.2" }
+}
