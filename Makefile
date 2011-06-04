@@ -2,4 +2,4 @@
 .PHONY: test
 
 test:
-	node test/all.js
+	node test/node.js
