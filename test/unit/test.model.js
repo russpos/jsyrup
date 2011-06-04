@@ -1,7 +1,5 @@
 if (require || !jsyrup)
-    var jsyrup = {
-        ModelFactory: require('../../src/model').ModelFactory
-    };
+    var jsyrup = require('../../jsyrup');
 
 describe('when using ModelFactory', function() {
     var EventKlass, instance;
