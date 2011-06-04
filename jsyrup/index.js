@@ -1,5 +1,4 @@
-exports.Model = require('./model');
-
 module.exports = {
-    ModelFactory: require(__dirname+'/model').ModelFactory
+    ModelFactory: require(__dirname+'/model').ModelFactory,
+    DataSource: require(__dirname+'/datasource').DataSource
 };

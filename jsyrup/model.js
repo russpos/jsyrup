@@ -1,4 +1,5 @@
-var ModelFactory = (function() {
+if (typeof jsyrup == 'undefined') jsyrup = {};
+jsyrup.ModelFactory = (function() {
 
     var Model = function Model(datasource) {
         this.datasource = datasource;
@@ -108,6 +109,23 @@ var ModelFactory = (function() {
     };
 
     /**
+     * Creates this new instance in the datasource.
+     *
+     * @param {Function} callback Function to be called
+     *  when the create method returns
+     * @return {void}
+     */
+    Model.prototype.create = function(callback) {
+        if (!this.definition.key)
+            throw "Model does not have a primary key set!";
+
+        if (!this.datasource || !this.datasource.create)
+            throw "No datasource bound to model";
+
+        this.datasource.create(this, callback);
+    };
+
+    /**
      * Extends the schema object provided in a definition to have
      * with the defaults.
      *
@@ -176,5 +194,4 @@ var ModelFactory = (function() {
     return ModelFactory;
 })();
 
-
-exports.ModelFactory = ModelFactory;
+if (exports) exports.ModelFactory = jsyrup.ModelFactory;

@@ -2,10 +2,26 @@ if (require || !jsyrup)
     var jsyrup = require('../../jsyrup');
 
 describe('when using ModelFactory', function() {
-    var EventKlass, instance;
+    var EventKlass, OtherKlass, instance, otherInstance;
 
     beforeEach(function() {
         EventKlass = jsyrup.ModelFactory({
+            key: 'id',
+            schema: {
+                id:      { type: 'Integer', mutable: false },
+                count:   { type: 'Integer', default: 10 },
+                is_cool: { type: 'Boolean', default: true },
+                name:    { type: 'Text', default: 'Dave'}
+            },
+
+            methods: {
+                upperName: function() {
+                    this.set('name', this.get('name').toUpperCase());
+                }
+            }
+        });
+
+        OtherKlass = jsyrup.ModelFactory({
             schema: {
                 id:      { type: 'Integer', mutable: false },
                 count:   { type: 'Integer', default: 10 },
@@ -20,6 +36,7 @@ describe('when using ModelFactory', function() {
             }
         });
         instance = new EventKlass();
+        otherInstance = new OtherKlass();
     });
 
     describe('When Creating a model class', function() {
@@ -114,4 +131,36 @@ describe('when using ModelFactory', function() {
         });
     });
 
+    describe('When creating an instance', function() {
+
+        var datasource, callback;
+
+        beforeEach(function() {
+            datasource = {
+                create: function(model, callback) {}
+            };
+
+            instance.datasource = datasource;
+            otherInstance.datasource = datasource;
+        });
+
+        it('should have a create method', function() {
+            expect(instance.create).toBeFunction();
+        });
+
+        it('should call create on the datasource', function() {
+            spyOn(datasource, 'create');
+            instance.create(callback);
+            expect(datasource.create).toHaveBeenCalledWith(instance, callback);
+        });
+
+        it('should error if no datasource is attached', function() {
+            instance.datasource = undefined;
+            expect(function() { instance.create(callback); }).toThrow();
+        });
+
+        it('should error if the key is not defined', function() {
+            expect(function() { otherInstance.create(callback); }).toThrow();
+        });
+    });
 });
