@@ -1,96 +1,119 @@
-var model = require('../../src/model'),
-    assert = require('assert'),
-    EventKlass = model.ModelFactory({
-        schema: {
-            id:      { type: 'Integer', mutable: false },
-            count:   { type: 'Integer', default: 10 },
-            is_cool: { type: 'Boolean', default: true },
-            name:    { type: 'Text', default: 'Dave'}
-        },
+if (require || !jsyrup)
+    var jsyrup = {
+        ModelFactory: require('../../src/model').ModelFactory
+    };
 
-        methods: {
-            upperName: function() {
-                this.set('name', this.get('name').toUpperCase());
+describe('when using ModelFactory', function() {
+    var EventKlass, instance;
+
+    beforeEach(function() {
+        EventKlass = jsyrup.ModelFactory({
+            schema: {
+                id:      { type: 'Integer', mutable: false },
+                count:   { type: 'Integer', default: 10 },
+                is_cool: { type: 'Boolean', default: true },
+                name:    { type: 'Text', default: 'Dave'}
+            },
+
+            methods: {
+                upperName: function() {
+                    this.set('name', this.get('name').toUpperCase());
+                }
             }
-        }
-    }),
-    instance = new EventKlass();
+        });
+        instance = new EventKlass();
+    });
 
-// When Creating a model class...
+    describe('When Creating a model class', function() {
+        it('should be return a model class', function() {
+            expect(EventKlass).toBeTruthy();
+            expect(EventKlass instanceof Function).toBeTruthy();
+        });
+    });
 
-(function() {
-    assert.ok(EventKlass, 'should exist');
-    assert.ok(EventKlass instanceof Function, 'should be a function');
-})();
+    describe('When creating an instance of a model class', function() {
+        it('should return undefined for made up vars', function() {
+            expect(instance.get('foo')).toBe(undefined);
+        });
 
-// When creating an instance of a model class...
-(function() {
-    assert.strictEqual(instance.get('foo'), undefined,
-            'should return undefined for made up vars');
+        it('should return null for vars with no default', function() {
+            expect(instance.get('id')).toBe(null);
+        });
 
-    assert.strictEqual(instance.get('id'), null,
-            'should return null for vars with no default');
+        it('should respect boolean defaults', function() {
+            expect(instance.get('is_cool')).toEqual(true);
+        });
 
-    assert.strictEqual(instance.get('is_cool'), true,
-            'should respect boolean defaults');
+        it('should respect text defaults', function() {
+            expect(instance.get('name')).toEqual('Dave');
+        });
 
-    assert.strictEqual(instance.get('name'),  'Dave',
-            'should respect text defaults');
+        it('should respect integer defaults', function() {
+            expect(instance.get('count')).toEqual(10);
+        });
 
-    assert.strictEqual(instance.get('count'), 10,
-            'should respect integer defaults');
-})();
+    });
 
-// When modifying an instance
-(function() {
-    assert.throws(function() { instance.set('id', 3);  },
-            'should not allow setting un mutable fields');
+    describe('When modifying an instance', function() {
+        it('should not allow setting un mutable fields', function() {
+            expect(function() { instance.set('id', 3);  }).toThrow();
+        });
 
-    assert.throws(function() { instance.set('foo', 'bar'); },
-            'should not allow setting a made up var');
+        it('should not allow setting a made up var', function() {
+            expect(function() { instance.set('foo', 'bar'); }).toThrow();
+        });
 
-    instance.set('count', '123');
-    assert.strictEqual(instance.get('count'), 123,
-            'should co-erce string to integer');
+        it('should co-erce string to integer', function() {
+            instance.set('count', '123');
+            expect(instance.get('count')).toBeExactly(123);
+        });
 
-    instance.set('is_cool', 0);
-    assert.strictEqual(instance.get('is_cool'), false,
-            'should co-erce integer to boolean');
+        it('should co-erce integer to boolean', function() {
+            instance.set('is_cool', 0);
+            expect(instance.get('is_cool')).toBeExactly(false);
+        });
 
-    instance.set('name', 200);
-    assert.strictEqual(instance.get('name'), '200',
-            'should co-erce integer to string');
-})();
+        it('should co-erce integer to string', function() {
+            instance.set('name', 200);
+            expect(instance.get('name'), '200');
+        });
+    });
 
+    describe('When dumping and loading data', function() {
 
-// When dumping and loading data
-(function() {
-    instance.set('name',    'John');
-    instance.set('count',   62);
-    instance.set('is_cool', true);
+        var dump, inst2;
+        beforeEach(function() {
+            instance.set('name',    'John');
+            instance.set('count',   62);
+            instance.set('is_cool', true);
 
-    var dump  = instance.dump(),
-        inst2 = new EventKlass();
+            dump  = instance.dump();
+            inst2 = new EventKlass();
+        });
 
-    assert.strictEqual(dump.name,   'John', 'should have correct name');
-    assert.strictEqual(dump.count,   62,    'should have correct count');
-    assert.strictEqual(dump.is_cool, true,  'should have correct is_cool');
-    assert.strictEqual(dump.id,      null,  'should have null id');
+        it('should have correct data in dump', function() {
+            expect(dump.name).toBeExactly('John');
+            expect(dump.count).toBeExactly(62);
+            expect(dump.is_cool).toBeExactly(true);
+            expect(dump.id).toBeExactly(null);
+        });
 
-    dump.id = 2;
-    inst2.load(dump);
+        it('should load correct data from dump', function() {
+            dump.id = 2;
+            inst2.load(dump);
+            expect(inst2.get('name')).toBeExactly('John');
+            expect(inst2.get('count')).toBeExactly(62);
+            expect(inst2.get('is_cool')).toBeExactly(true);
+            expect(inst2.get('id')).toBeExactly(2);
+        });
+    });
 
-    assert.strictEqual(inst2.get('name'),   'John', 'should have correct name');
-    assert.strictEqual(inst2.get('count'),   62,    'should have correct count');
-    assert.strictEqual(inst2.get('is_cool'), true,  'should have correct is_cool');
-    assert.strictEqual(inst2.get('id'),      2,     'should have correct id');
-})();
+    describe('When adding methods to a class', function() {
+        it('should run methods on instance', function() {
+            instance.set('name', 'jimmy');
+            instance.upperName();
+            expect(instance.get('name')).toEqual('JIMMY');
+        });
+    });
 
-// When adding methods to a class
-(function() {
-    instance.set('name', 'jimmy');
-    instance.upperName();
-    assert.equal(instance.get('name'), 'JIMMY',
-        'should run methods on instance');
-})();
-
+});
