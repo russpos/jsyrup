@@ -194,4 +194,4 @@ jsyrup.ModelFactory = (function() {
     return ModelFactory;
 })();
 
-if (exports) exports.ModelFactory = jsyrup.ModelFactory;
+if (typeof exports != 'undefined') exports.ModelFactory = jsyrup.ModelFactory;

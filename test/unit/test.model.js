@@ -1,4 +1,4 @@
-if (require || !jsyrup)
+if (typeof require != 'undefined' || !jsyrup)
     var jsyrup = require('../../jsyrup');
 
 describe('when using ModelFactory', function() {

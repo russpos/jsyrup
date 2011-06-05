@@ -12,4 +12,4 @@ jsyrup.DataSource = (function() {
     return DataSource;
 })();
 
-if (exports) exports.DataSource = jsyrup.DataSource;
+if (typeof exports != 'undefined') exports.DataSource = jsyrup.DataSource;
